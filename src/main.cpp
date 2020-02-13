@@ -48,7 +48,7 @@ int main()
     GLuint vao = 0;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-
+    
     GLfloat vertices[] = {
          0.0f,  0.5f,
          0.5f, -0.5f,
@@ -62,15 +62,15 @@ int main()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (const void*)0);
 
     char* vs_src = read_file_to_str("src/shaders/vert.glsl");
-    //char* fs_src = read_file_to_str("src/shaders/frag.glsl");
-    if (!vs_src /*|| !fs_src*/) {
+    char* fs_src = read_file_to_str("src/shaders/frag.glsl");
+    if (!vs_src || !fs_src) {
         fprintf(stderr, "[ERROR] could not read file to string\n");
         glfwDestroyWindow(win);
         glfwTerminate();
     }
-    printf(vs_src);
-    //printf(fs_src);
-    /*GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+    printf("%s", vs_src);
+    printf("%s", fs_src);
+    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, &vs_src, nullptr);
     glCompileShader(vs);
     GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
@@ -79,18 +79,18 @@ int main()
     GLuint program = glCreateProgram();
     glAttachShader(program, vs);
     glAttachShader(program, fs);
-    glLinkProgram(program);*/
+    glLinkProgram(program);
     free(vs_src);
-    //free(fs_src);
+    free(fs_src);
 
     while (!glfwWindowShouldClose(win)) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        glUseProgram(program);
+        glBindVertexArray(vao);
 
-        //glUseProgram(program);
-        //glBindVertexArray(vao);
-
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwPollEvents();
         glfwSwapBuffers(win);
@@ -180,7 +180,7 @@ char* read_file_to_str(const char* path)
     do {
         if (pos == len) {
             len *= 2;
-            buf = (char*)realloc(buf, sizeof(char) * 64);
+            buf = (char*)realloc(buf, sizeof(char) * len);
             if (!buf) {
                 fprintf(stderr, "[ERROR] could not reallocate memory\n");
                 fclose(file);
