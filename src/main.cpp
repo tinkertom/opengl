@@ -68,25 +68,26 @@ int main()
         glfwDestroyWindow(win);
         glfwTerminate();
     }
-    printf("%s", vs_src);
-    printf("%s", fs_src);
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &vs_src, nullptr);
-    glCompileShader(vs);
     GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(vs, 1, &vs_src, nullptr);
     glShaderSource(fs, 1, &fs_src, nullptr);
+    free(vs_src);
+    free(fs_src);
+    glCompileShader(vs);
     glCompileShader(fs);
     GLuint program = glCreateProgram();
     glAttachShader(program, vs);
     glAttachShader(program, fs);
     glLinkProgram(program);
-    free(vs_src);
-    free(fs_src);
-
+    glUseProgram(program);
+    GLint uniform = glGetUniformLocation(program, "u_col");
+    glUniform4f(uniform, 1.0, 0.0f, 1.0f, 1.0f);
+    
     while (!glfwWindowShouldClose(win)) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
         glUseProgram(program);
         glBindVertexArray(vao);
 
