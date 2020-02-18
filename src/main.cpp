@@ -12,6 +12,8 @@ bool gl_log(const char* msg, ...);
 bool gl_log_err(const char* msg, ...);
 void glfw_error_callback(int err, const char* msg);
 char* read_file_to_str(const char* path);
+GLuint compile_shader(const char* src, GLenum type);
+GLuint create_program(GLuint vs, GLuint fs);
 
 int main()
 {
@@ -68,27 +70,29 @@ int main()
         glfwDestroyWindow(win);
         glfwTerminate();
     }
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(vs, 1, &vs_src, nullptr);
-    glShaderSource(fs, 1, &fs_src, nullptr);
+    GLuint vs = compile_shader(vs_src, GL_VERTEX_SHADER);
+    if (!vs) {
+        return 0;
+    }
+    GLuint fs = compile_shader(fs_src, GL_FRAGMENT_SHADER);
+    if (!fs) {
+        return 0;
+    }
     free(vs_src);
     free(fs_src);
-    glCompileShader(vs);
-    glCompileShader(fs);
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glUseProgram(program);
-    GLint uniform = glGetUniformLocation(program, "u_col");
+    GLuint prog = create_program(vs, fs);
+    if (!prog) {
+        return 0;
+    }
+    glUseProgram(prog);
+    GLint uniform = glGetUniformLocation(prog, "u_col");
     glUniform4f(uniform, 1.0, 0.0f, 1.0f, 1.0f);
     
     while (!glfwWindowShouldClose(win)) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(program);
+        glUseProgram(prog);
         glBindVertexArray(vao);
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -195,4 +199,44 @@ char* read_file_to_str(const char* path)
 
     fclose(file);
     return buf;
+}
+
+GLuint compile_shader(const char* src, GLenum type)
+{
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &src, NULL);
+    glCompileShader(shader);
+
+    int compile_status;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
+    if (!compile_status){
+        int len;
+        const int max_len = 1024;
+        char log[max_len];
+        glGetShaderInfoLog(shader, max_len, &len, log);
+        gl_log_err("[ERROR] could not compile shader - compile message:\n%s\n", log);
+        //return 0;
+    }
+
+    return shader;
+}
+
+GLuint create_program(GLuint vs, GLuint fs)
+{
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+
+    int link_status;
+    glGetProgramiv(program, GL_LINK_STATUS, &link_status);
+    if (!link_status) {
+        int len;
+        const int max_len = 1024;
+        char log[max_len];
+        glGetProgramInfoLog(program, max_len, &len, log);
+        //gl_log_err("[ERROR] could not link program - link message:\n%s\n", log);
+    }
+
+    return program;
 }
