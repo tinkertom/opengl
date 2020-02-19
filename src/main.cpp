@@ -44,8 +44,10 @@ int main()
         return 0;
     }
 
-    glEnable (GL_DEPTH_TEST);
+    glEnable (GL_DEPTH_TEST | GL_CULL_FACE);
     glDepthFunc (GL_LESS);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
 
     GLuint vao = 0;
     glGenVertexArrays(1, &vao);
@@ -56,13 +58,24 @@ int main()
          0.5f, -0.5f,
         -0.5f, -0.5f,
     };
-    GLuint vbo = 0;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    GLfloat colors[] = {
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f,
+    };
+    GLuint vbo_ver = 0;
+    glGenBuffers(1, &vbo_ver);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_ver);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (const void*)0);
-
+    GLuint vbo_col = 0;
+    glGenBuffers(1, &vbo_col);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_col);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (const void*)0);
+    
     char* vs_src = read_file_to_str("src/shaders/vert.glsl");
     char* fs_src = read_file_to_str("src/shaders/frag.glsl");
     if (!vs_src || !fs_src) {
@@ -85,8 +98,8 @@ int main()
         return 0;
     }
     glUseProgram(prog);
-    GLint uniform = glGetUniformLocation(prog, "u_col");
-    glUniform4f(uniform, 1.0, 0.0f, 1.0f, 1.0f);
+    //GLint uniform = glGetUniformLocation(prog, "u_col");
+    //glUniform4f(uniform, 1.0, 0.0f, 1.0f, 1.0f);
     
     while (!glfwWindowShouldClose(win)) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
