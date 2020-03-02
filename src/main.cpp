@@ -4,6 +4,9 @@
 #include <ctime>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define GL_LOG_FILE "gl.log"
 
@@ -44,7 +47,7 @@ int main()
         return 0;
     }
 
-    glEnable (GL_DEPTH_TEST | GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
     glDepthFunc (GL_LESS);
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
@@ -98,8 +101,12 @@ int main()
         return 0;
     }
     glUseProgram(prog);
-    //GLint uniform = glGetUniformLocation(prog, "u_col");
-    //glUniform4f(uniform, 1.0, 0.0f, 1.0f, 1.0f);
+
+    glm::vec4 trans_vec(1.0f, 1.0f, 0.0f, 1.0f);
+    glm::mat4 trans_mat(1.0f);
+    trans_mat = glm::translate(trans_mat, glm::vec3(1.0f, 1.0f, 0.0f));
+    GLint uniform = glGetUniformLocation(prog, "u_transform");
+    glUniformMatrix4fv(uniform, 1.0, 0.0f, 1.0f, 1.0f);
     
     while (!glfwWindowShouldClose(win)) {
         glClearColor(0.5f, 0.5f, 0.5f, 1.0f);

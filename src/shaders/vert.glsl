@@ -5,8 +5,10 @@ layout (location = 1) in vec3 col;
 
 out vec3 v_col;
 
+uniform mat4 u_transform;
+
 void main()
 {
     v_col = col;
-    gl_Position = vec4(pos, 0.0f, 1.0f);
+    gl_Position = u_transform * vec4(pos, 0.0f, 1.0f);
 }
